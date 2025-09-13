@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import Image from "next/image";
 import {
   motion,
   useScroll,
@@ -353,152 +354,210 @@ export default function WhatYouGet() {
   const dotScaleSource = useTransform<number, number>(t, (v) => (v > 0.98 ? 1.06 : 1));
   const dotScale = useSpring(dotScaleSource, { stiffness: 260, damping: 18 });
 
-  /* ----------------------- RENDER ----------------------- */
-  return (
-    <section
-      ref={ref}
-      aria-label="What you get"
-      className="relative bg-neutral-50"
-      style={{ paddingTop: 120, paddingBottom: 140 }}
-    >
-      {/* ambient vignette */}
-      <motion.div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ backgroundImage: vignette }} />
-
-      <div className="mx-auto w-[min(1200px,92vw)] px-4">
-        <div className="text-center mb-10">
+  /* ----------------------- MOBILE: simple list (no animations, no images) ----------------------- */
+  const MobileList = () => (
+    <div className="sm:hidden bg-neutral-50 px-4 pt-8 pb-8">
+      <div className="max-w-[720px] mx-auto">
+        <div className="text-center mb-6">
           <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600">
             + WHAT YOU GET
           </span>
 
-          <h2 className="mt-5 text-3xl sm:text-4xl md:text-5xl font-extrabold text-neutral-900 leading-tight">
+          <h2 className="mt-4 text-2xl font-extrabold text-neutral-900">
             Everything Attendify provides — from verified check-ins to payroll-ready exports
           </h2>
 
-          <p className="mt-3 mx-auto max-w-3xl text-neutral-600">
-            Attendify is built to remove doubt and manual work. Below is a step-by-step view of the product capabilities you get when you adopt Attendify — verification, automation, support and insights.
+          <p className="mt-2 mx-auto max-w-[44ch] text-sm text-neutral-600">
+            Attendify removes doubt and manual work. Below is a clear list of capabilities you get — verification,
+            automation, support and insights.
           </p>
         </div>
 
-        <div className="relative mx-auto max-w-[980px]">
-          <div className="relative" style={{ height: `${totalStackHeightPx}px` }}>
-            {/* track background */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 top-[6%] bottom-[6%] w-[12px] rounded-full bg-gradient-to-b from-white via-neutral-200 to-white/80"
-              style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)" }}
-            />
-
-            {/* animated fill */}
-            <motion.div
-              className="absolute left-1/2 -translate-x-1/2 w-[12px] rounded-full"
-              style={{
-                top: fillTop,
-                height: fillPct,
-                background:
-                  "linear-gradient(180deg, rgba(99,102,241,0.95) 0%, rgba(96,165,250,0.92) 42%, rgba(16,185,129,0.95) 100%)",
-                boxShadow: "0 24px 60px rgba(99,102,241,0.12), inset 0 -6px 18px rgba(16,185,129,0.06)",
-                zIndex: 20,
-              }}
-            />
-
-            {/* highlight edge */}
-            <motion.div
-              style={{ top: fillTop, height: fillPct }}
-              className="absolute left-1/2 -translate-x-1/2 w-[12px] rounded-full pointer-events-none"
-              aria-hidden
+        <div className="space-y-4">
+          {ITEMS.map((it, idx) => (
+            <article
+              key={it.id}
+              className="rounded-2xl bg-white shadow-lg border border-transparent p-4"
+              aria-label={it.title}
             >
-              <div style={{ height: "100%", width: "100%", borderRadius: 9999, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5)", opacity: 0.8 }} />
-            </motion.div>
-
-            {/* traveling glow */}
-            <motion.div style={{ top: indicatorTop, opacity: glowAlpha, scale: endPulse }} className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-              <motion.div
-                style={{
-                  height: glowSize,
-                  width: glowSize,
-                  borderRadius: 9999,
-                  background: "radial-gradient(circle at center, rgba(99,102,241,0.25), rgba(99,102,241,0.06) 35%, transparent 60%)",
-                  filter: "blur(18px)",
-                }}
-                className="rounded-full"
-                aria-hidden
-              />
-            </motion.div>
-
-            {/* indicator (dot) */}
-            <motion.div style={{ top: indicatorTop }} className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-40">
-              <div className="relative grid place-items-center">
-                <motion.div style={{ scale: dotScale }} className="h-10 w-10 rounded-full bg-white grid place-items-center shadow-sm">
-                  <div style={{ border: "2px solid rgba(99,102,241,0.12)" }} />
-                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: "#4f46e5" }} />
-                </motion.div>
-
-                <motion.div aria-hidden className="absolute block rounded-full border border-indigo-200/40" style={{ width: 56, height: 56, opacity: useTransform(t, [0.96, 1], [0, 0.9]), scale: useTransform(t, [0.96, 1], [0.9, 1.16]), zIndex: -1 }} />
-              </div>
-            </motion.div>
-
-            {/* render items */}
-            {ITEMS.map((it, idx) => {
-              const w = itemWindows[idx];
-              const isLeft = w.side === "left";
-              const cardSideClass = isLeft ? "left-0 -translate-x-12" : "right-0 translate-x-12";
-
-              // pick the corresponding MotionValues from our arrays
-              const opacity = opacities[idx];
-              const slideX = slideXs[idx];
-              const cScale = cardScales[idx];
-              const bScale = badgeScales[idx];
-              const bBox = badgeBoxShadows[idx];
-              const connOpacity = connectorOpacities[idx];
-
-              return (
-                <div key={it.id}>
-                  <div className="absolute left-1/2 -translate-x-1/2 z-20" style={{ top: `${w.topPercent}%` }} aria-hidden>
-                    <div className="h-3.5 w-3.5 rounded-full bg-white" style={{ boxShadow: "0 6px 20px rgba(16,24,40,0.06)", border: "2px solid rgba(99,102,241,0.12)" }} />
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-400 grid place-items-center text-white font-semibold shadow">
+                    {String(idx + 1).padStart(2, "0")}
                   </div>
-
-                  <motion.div style={{ opacity: connOpacity }} className="absolute z-25" aria-hidden>
-                    {isLeft ? (
-                      <div style={{ top: `calc(${w.topPercent}% - 7px)`, left: "50%", width: "32%", transform: "translateX(-100%)" }} className="h-1 rounded-full">
-                        <div className="h-1 w-full rounded-full" style={{ background: "linear-gradient(90deg,#60a5fa,#6366f1)", boxShadow: "0 10px 24px rgba(99,102,241,0.08)", filter: "blur(0.6px)" }} />
-                      </div>
-                    ) : (
-                      <div style={{ top: `calc(${w.topPercent}% - 7px)`, left: "50%", width: "32%", transform: "translateX(0)" }} className="h-1 rounded-full">
-                        <div className="h-1 w-full rounded-full" style={{ background: "linear-gradient(90deg,#6366f1,#60a5fa)", boxShadow: "0 10px 24px rgba(99,102,241,0.08)", filter: "blur(0.6px)" }} />
-                      </div>
-                    )}
-                  </motion.div>
-
-                  <motion.div style={{ top: w.topPx, opacity: opacity, x: slideX, scale: cScale }} className={`absolute w-[46%] transform -translate-y-1/2 ${cardSideClass}`}>
-                    <div className="relative group rounded-2xl bg-white/95 backdrop-blur-md p-6" style={{ border: "1px solid rgba(13,21,38,0.05)", boxShadow: "0 22px 60px rgba(13,21,38,0.06)", minHeight: `${CARD_H}px` }}>
-                      <div className="flex items-start gap-4">
-                        <motion.div style={{ scale: bScale }} className="relative flex h-12 w-12 items-center justify-center rounded-lg">
-                          <div className="absolute inset-0 rounded-lg" style={{ background: "linear-gradient(180deg, rgba(99,102,241,0.12), rgba(96,165,250,0.06))", boxShadow: bBox as unknown as string, filter: "drop-shadow(0 6px 18px rgba(99,102,241,0.12))" }} />
-                          <div className="relative z-10 h-9 w-9 grid place-items-center rounded-md bg-white text-indigo-700 font-semibold">
-                            <span className="text-sm">0{idx + 1}</span>
-                          </div>
-                        </motion.div>
-
-                        <div>
-                          <h3 className="text-lg font-semibold text-neutral-900">{it.title}</h3>
-                          <p className="mt-1 text-sm text-neutral-600 leading-relaxed">{it.body}</p>
-                        </div>
-                      </div>
-
-                      <div className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "linear-gradient(180deg, rgba(99,102,241,0.02), rgba(99,102,241,0.01))" }} />
-                    </div>
-                  </motion.div>
                 </div>
-              );
-            })}
-          </div>
+
+                <div className="min-w-0">
+                  <h3 className="text-base font-semibold text-neutral-900">{it.title}</h3>
+                  <p className="mt-1 text-sm text-neutral-600">{it.body}</p>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {/* small contextual chips — intentionally minimal */}
+                    <span className="rounded-full bg-neutral-100 px-2 py-1 text-xs text-neutral-700">Enterprise-ready</span>
+                    <span className="rounded-full bg-neutral-100 px-2 py-1 text-xs text-neutral-700">Audit-safe</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-          {["Verified events", "Device enrollment", "Geo policies", "IoT-ready", "Payroll exports"].map((t) => (
-            <span key={t} className="rounded-full bg-white px-3 py-1 text-xs text-neutral-700 ring-1 ring-neutral-200">
-              {t}
+        <div className="mt-6 text-center">
+          <button className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-white font-semibold shadow">
+            Get a demo
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  /* ----------------------- RENDER ----------------------- */
+  return (
+    <section ref={ref} aria-label="What you get" className="relative bg-neutral-50">
+      {/* Mobile list (no animation, no images) */}
+      <MobileList />
+
+      {/* Desktop / Tablet: original animated timeline (unchanged) */}
+      <div className="hidden sm:block" style={{ paddingTop: 120, paddingBottom: 140 }}>
+        {/* ambient vignette */}
+        <motion.div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ backgroundImage: vignette }} />
+
+        <div className="mx-auto w-[min(1200px,92vw)] px-4">
+          <div className="text-center mb-10">
+            <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600">
+              + WHAT YOU GET
             </span>
-          ))}
+
+            <h2 className="mt-5 text-3xl sm:text-4xl md:text-5xl font-extrabold text-neutral-900 leading-tight">
+              Everything Attendify provides — from verified check-ins to payroll-ready exports
+            </h2>
+
+            <p className="mt-3 mx-auto max-w-3xl text-neutral-600">
+              Attendify is built to remove doubt and manual work. Below is a step-by-step view of the product capabilities you get when you adopt Attendify — verification, automation, support and insights.
+            </p>
+          </div>
+
+          <div className="relative mx-auto max-w-[980px]">
+            <div className="relative" style={{ height: `${totalStackHeightPx}px` }}>
+              {/* track background */}
+              <div
+                className="absolute left-1/2 -translate-x-1/2 top-[6%] bottom-[6%] w-[12px] rounded-full bg-gradient-to-b from-white via-neutral-200 to-white/80"
+                style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)" }}
+              />
+
+              {/* animated fill */}
+              <motion.div
+                className="absolute left-1/2 -translate-x-1/2 w-[12px] rounded-full"
+                style={{
+                  top: fillTop,
+                  height: fillPct,
+                  background:
+                    "linear-gradient(180deg, rgba(99,102,241,0.95) 0%, rgba(96,165,250,0.92) 42%, rgba(16,185,129,0.95) 100%)",
+                  boxShadow: "0 24px 60px rgba(99,102,241,0.12), inset 0 -6px 18px rgba(16,185,129,0.06)",
+                  zIndex: 20,
+                }}
+              />
+
+              {/* highlight edge */}
+              <motion.div
+                style={{ top: fillTop, height: fillPct }}
+                className="absolute left-1/2 -translate-x-1/2 w-[12px] rounded-full pointer-events-none"
+                aria-hidden
+              >
+                <div style={{ height: "100%", width: "100%", borderRadius: 9999, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5)", opacity: 0.8 }} />
+              </motion.div>
+
+              {/* traveling glow */}
+              <motion.div style={{ top: indicatorTop, opacity: glowAlpha, scale: endPulse }} className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+                <motion.div
+                  style={{
+                    height: glowSize,
+                    width: glowSize,
+                    borderRadius: 9999,
+                    background: "radial-gradient(circle at center, rgba(99,102,241,0.25), rgba(99,102,241,0.06) 35%, transparent 60%)",
+                    filter: "blur(18px)",
+                  }}
+                  className="rounded-full"
+                  aria-hidden
+                />
+              </motion.div>
+
+              {/* indicator (dot) */}
+              <motion.div style={{ top: indicatorTop }} className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-40">
+                <div className="relative grid place-items-center">
+                  <motion.div style={{ scale: dotScale }} className="h-10 w-10 rounded-full bg-white grid place-items-center shadow-sm">
+                    <div style={{ border: "2px solid rgba(99,102,241,0.12)" }} />
+                    <div className="h-2.5 w-2.5 rounded-full" style={{ background: "#4f46e5" }} />
+                  </motion.div>
+
+                  <motion.div aria-hidden className="absolute block rounded-full border border-indigo-200/40" style={{ width: 56, height: 56, opacity: useTransform(t, [0.96, 1], [0, 0.9]), scale: useTransform(t, [0.96, 1], [0.9, 1.16]), zIndex: -1 }} />
+                </div>
+              </motion.div>
+
+              {/* render items */}
+              {ITEMS.map((it, idx) => {
+                const w = itemWindows[idx];
+                const isLeft = w.side === "left";
+                const cardSideClass = isLeft ? "left-0 -translate-x-12" : "right-0 translate-x-12";
+
+                // pick the corresponding MotionValues from our arrays
+                const opacity = opacities[idx];
+                const slideX = slideXs[idx];
+                const cScale = cardScales[idx];
+                const bScale = badgeScales[idx];
+                const bBox = badgeBoxShadows[idx];
+                const connOpacity = connectorOpacities[idx];
+
+                return (
+                  <div key={it.id}>
+                    <div className="absolute left-1/2 -translate-x-1/2 z-20" style={{ top: `${w.topPercent}%` }} aria-hidden>
+                      <div className="h-3.5 w-3.5 rounded-full bg-white" style={{ boxShadow: "0 6px 20px rgba(16,24,40,0.06)", border: "2px solid rgba(99,102,241,0.12)" }} />
+                    </div>
+
+                    <motion.div style={{ opacity: connOpacity }} className="absolute z-25" aria-hidden>
+                      {isLeft ? (
+                        <div style={{ top: `calc(${w.topPercent}% - 7px)`, left: "50%", width: "32%", transform: "translateX(-100%)" }} className="h-1 rounded-full">
+                          <div className="h-1 w-full rounded-full" style={{ background: "linear-gradient(90deg,#60a5fa,#6366f1)", boxShadow: "0 10px 24px rgba(99,102,241,0.08)", filter: "blur(0.6px)" }} />
+                        </div>
+                      ) : (
+                        <div style={{ top: `calc(${w.topPercent}% - 7px)`, left: "50%", width: "32%", transform: "translateX(0)" }} className="h-1 rounded-full">
+                          <div className="h-1 w-full rounded-full" style={{ background: "linear-gradient(90deg,#6366f1,#60a5fa)", boxShadow: "0 10px 24px rgba(99,102,241,0.08)", filter: "blur(0.6px)" }} />
+                        </div>
+                      )}
+                    </motion.div>
+
+                    <motion.div style={{ top: w.topPx, opacity: opacity, x: slideX, scale: cScale }} className={`absolute w-[46%] transform -translate-y-1/2 ${cardSideClass}`}>
+                      <div className="relative group rounded-2xl bg-white/95 backdrop-blur-md p-6" style={{ border: "1px solid rgba(13,21,38,0.05)", boxShadow: "0 22px 60px rgba(13,21,38,0.06)", minHeight: `${CARD_H}px` }}>
+                        <div className="flex items-start gap-4">
+                          <motion.div style={{ scale: bScale }} className="relative flex h-12 w-12 items-center justify-center rounded-lg">
+                            <div className="absolute inset-0 rounded-lg" style={{ background: "linear-gradient(180deg, rgba(99,102,241,0.12), rgba(96,165,250,0.06))", boxShadow: bBox as unknown as string, filter: "drop-shadow(0 6px 18px rgba(99,102,241,0.12))" }} />
+                            <div className="relative z-10 h-9 w-9 grid place-items-center rounded-md bg-white text-indigo-700 font-semibold">
+                              <span className="text-sm">0{idx + 1}</span>
+                            </div>
+                          </motion.div>
+
+                          <div>
+                            <h3 className="text-lg font-semibold text-neutral-900">{it.title}</h3>
+                            <p className="mt-1 text-sm text-neutral-600 leading-relaxed">{it.body}</p>
+                          </div>
+                        </div>
+
+                        <div className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "linear-gradient(180deg, rgba(99,102,241,0.02), rgba(99,102,241,0.01))" }} />
+                      </div>
+                    </motion.div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+            {["Verified events", "Device enrollment", "Geo policies", "IoT-ready", "Payroll exports"].map((t) => (
+              <span key={t} className="rounded-full bg-white px-3 py-1 text-xs text-neutral-700 ring-1 ring-neutral-200">
+                {t}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </section>

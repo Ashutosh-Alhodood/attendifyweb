@@ -98,7 +98,9 @@ function IconArrow() {
   );
 }
 
-/* ------------------------------ PriceCard -------------------------------- */
+/* ------------------------------ PriceCard --------------------------------
+   KEEP this desktop-optimized card untouched. We'll reuse it in desktop view.
+--------------------------------------------------------------------------- */
 function PriceCard({ plan, mode }: { plan: Plan; mode: "personal" | "business" }) {
   const isFeatureTier = plan.id === "team" || plan.id === "business" || plan.id === "enterprise";
   const ctaClass = isFeatureTier ? "bg-green-400 text-black hover:bg-green-500" : "bg-white text-black hover:bg-neutral-100";
@@ -166,6 +168,45 @@ function PriceCard({ plan, mode }: { plan: Plan; mode: "personal" | "business" }
   );
 }
 
+/* --------------------------- Mobile Price Card ---------------------------
+   A mobile-first premium-styled card: big legible title, subtle gradient,
+   stacked info and a prominent CTA. No desktop changes here.
+--------------------------------------------------------------------------- */
+function PriceCardMobile({ plan }: { plan: Plan }) {
+  return (
+    <article className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-white to-neutral-100 border border-neutral-200 p-5 shadow-md">
+      <div className="flex items-start gap-3">
+        <div className="rounded-lg bg-neutral-900 text-white p-3 shadow-sm flex items-center justify-center w-12 h-12">
+          <span className="font-semibold text-sm">{plan.tag?.slice(0,1)}</span>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <h4 className="text-lg font-semibold text-neutral-900">{plan.title}</h4>
+            {plan.timespan && <div className="text-xs font-medium text-neutral-500">{plan.timespan}</div>}
+          </div>
+          {plan.subtitle && <p className="mt-1 text-sm text-neutral-600">{plan.subtitle}</p>}
+        </div>
+      </div>
+
+      <div className="mt-4 border-t pt-4 space-y-2">
+        {plan.bullets.map((b) => (
+          <div key={b} className="flex items-start gap-3">
+            <div className="mt-1 inline-block h-2 w-2 rounded-full bg-neutral-400" />
+            <div className="text-sm text-neutral-700 flex-1">{b}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-5 flex gap-3">
+        <button className="flex-1 rounded-full bg-indigo-600 text-white py-3 font-semibold shadow">Get started</button>
+        <button className="w-12 rounded-full bg-white border border-neutral-200 grid place-items-center">
+          <IconArrow />
+        </button>
+      </div>
+    </article>
+  );
+}
+
 /* ------------------------------ LeftColumn ------------------------------ */
 function LeftColumn({ plan }: { plan: Plan }) {
   return (
@@ -220,23 +261,30 @@ export default function PricingPage() {
       <div className="pt-20 pb-12" />
 
       <div className="mx-auto max-w-7xl px-6">
-        {/* top heading row */}
-        <div className="mb-12 flex items-start justify-between gap-8">
-          <div className="flex-1">
-            <h2 className="text-6xl font-bold tracking-tight">Plans & Pricing</h2>
-            <p className="mt-3 text-neutral-600 max-w-xl">
-              Choose the plan that matches how you run operations — from lightweight site setups to enterprise-grade deployments with integrations and SLAs.
-            </p>
-          </div>
+        {/* ---------- MOBILE FIRST SECTION ---------- */}
+        <div className="sm:hidden">
+          {/* Mobile header */}
+          <div className="mb-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-extrabold tracking-tight">Plans & Pricing</h2>
+                <p className="mt-1 text-sm text-neutral-600 max-w-xs">Choose a plan that fits how you run operations.</p>
+              </div>
 
-          {/* toggle */}
-          <div className="flex-none">
-            <div className="inline-flex items-center gap-2 rounded-full bg-black text-white p-1.5">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-neutral-900/95 px-3 py-1 text-white text-sm">
+                  <span className="text-xs opacity-80">Trusted</span>
+                </div>
+              </div>
+            </div>
+
+            {/* mobile mode toggle */}
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setMode("personal")}
                 className={[
-                  "px-4 py-2 rounded-full transition",
-                  mode === "personal" ? "bg-white text-black" : "bg-transparent text-white/90",
+                  "flex-1 rounded-full px-4 py-2 text-sm font-semibold transition",
+                  mode === "personal" ? "bg-indigo-600 text-white" : "bg-white/80 text-neutral-700",
                 ].join(" ")}
               >
                 Small teams
@@ -244,74 +292,133 @@ export default function PricingPage() {
               <button
                 onClick={() => setMode("business")}
                 className={[
-                  "px-4 py-2 rounded-full transition",
-                  mode === "business" ? "bg-white text-black" : "bg-transparent text-white/90",
+                  "flex-1 rounded-full px-4 py-2 text-sm font-semibold transition",
+                  mode === "business" ? "bg-indigo-600 text-white" : "bg-white/80 text-neutral-700",
                 ].join(" ")}
               >
-                Business & Enterprise
+                Business
               </button>
             </div>
           </div>
-        </div>
 
-        {/* main two-column layout */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          <div className="md:col-span-6">
-            <LeftColumn plan={leftPlan} />
+          {/* Mobile stacked card list */}
+          <div className="space-y-4">
+            <PriceCardMobile plan={plans[0]} />
+            <PriceCardMobile plan={plans[1]} />
           </div>
 
-          <div className="md:col-span-6">
-            <div className="pl-6 md:pl-12">
-              <PriceCard plan={rightPlan} mode={mode} />
-            </div>
-          </div>
-        </div>
-
-        {/* second row (swapped) */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          <div className="md:col-span-6 order-2 md:order-1">
-            <div className="pr-6 md:pr-12">
-              <PriceCard plan={leftPlan} mode={mode} />
-            </div>
-          </div>
-
-          <div className="md:col-span-6 order-1 md:order-2">
-            <div className="px-6 md:px-12 lg:px-16">
-              <div className="mb-4 inline-flex items-center gap-3 rounded-full bg-neutral-100/60 px-3 py-1 text-sm text-neutral-800">
-                <span className="h-2 w-2 rounded-full bg-black inline-block" /> Our approach
+          {/* Mobile details summary */}
+          <div className="mt-6 rounded-2xl bg-white/95 p-4 shadow-sm border border-neutral-200">
+            <div className="flex items-start gap-4">
+              <div className="rounded-lg bg-indigo-600 text-white p-2">✓</div>
+              <div>
+                <div className="font-semibold text-neutral-900">Need help choosing?</div>
+                <div className="mt-1 text-sm text-neutral-600">Contact our sales team for a quick recommendation based on your sites and headcount.</div>
               </div>
+            </div>
 
-              <h3 className="text-5xl font-semibold tracking-tight">Implementation & support</h3>
-              <p className="mt-4 max-w-xl text-neutral-600">
-                We help you onboard sites, define policies, and map verified events into payroll and HR systems — whether you run a few locations or thousands.
+            <div className="mt-4 flex gap-3">
+              <a href="#contact" className="flex-1 rounded-full bg-black text-white py-3 text-center font-semibold">Contact sales</a>
+              <a href="#demo" className="flex-1 rounded-full border border-neutral-200 py-3 text-center font-semibold">Request demo</a>
+            </div>
+          </div>
+        </div>
+
+        {/* ---------- DESKTOP / TABLET (UNCHANGED, wrapped) ---------- */}
+        <div className="hidden sm:block">
+          {/* top heading row */}
+          <div className="mb-12 flex items-start justify-between gap-8">
+            <div className="flex-1">
+              <h2 className="text-6xl font-bold tracking-tight">Plans & Pricing</h2>
+              <p className="mt-3 text-neutral-600 max-w-xl">
+                Choose the plan that matches how you run operations — from lightweight site setups to enterprise-grade deployments with integrations and SLAs.
               </p>
+            </div>
 
-              <ul className="mt-8 space-y-3 text-neutral-600">
-                <li className="flex items-start gap-3"><span className="mt-1 inline-block h-2 w-2 rounded-full bg-neutral-400" /> Dedicated onboarding plan</li>
-                <li className="flex items-start gap-3"><span className="mt-1 inline-block h-2 w-2 rounded-full bg-neutral-400" /> Policy templates for common industries</li>
-                <li className="flex items-start gap-3"><span className="mt-1 inline-block h-2 w-2 rounded-full bg-neutral-400" /> Pre-built HRMS/Payroll mappings</li>
-                <li className="flex items-start gap-3"><span className="mt-1 inline-block h-2 w-2 rounded-full bg-neutral-400" /> On-demand training for admins & managers</li>
-                <li className="flex items-start gap-3"><span className="mt-1 inline-block h-2 w-2 rounded-full bg-neutral-400" /> Optional on-site review for complex deployments</li>
-              </ul>
-
-              <div className="mt-12">
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
-                  className="rounded-full px-6 py-4 flex items-center gap-6 w-full md:w-3/4 text-lg font-semibold text-white bg-black hover:bg-neutral-900 transition shadow-[0_20px_60px_rgba(2,6,23,0.55)]"
+            {/* toggle */}
+            <div className="flex-none">
+              <div className="inline-flex items-center gap-2 rounded-full bg-black text-white p-1.5">
+                <button
+                  onClick={() => setMode("personal")}
+                  className={[
+                    "px-4 py-2 rounded-full transition",
+                    mode === "personal" ? "bg-white text-black" : "bg-transparent text-white/90",
+                  ].join(" ")}
                 >
-                  <div className="text-sm text-neutral-300 mr-2">Discuss</div>
-                  <div className="text-4xl font-extrabold tracking-tight">Contact Sales</div>
-
-                  <div className="ml-auto h-12 w-12 rounded-full bg-white grid place-items-center text-black">
-                    <IconArrow />
-                  </div>
-                </motion.button>
+                  Small teams
+                </button>
+                <button
+                  onClick={() => setMode("business")}
+                  className={[
+                    "px-4 py-2 rounded-full transition",
+                    mode === "business" ? "bg-white text-black" : "bg-transparent text-white/90",
+                  ].join(" ")}
+                >
+                  Business & Enterprise
+                </button>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="py-24" />
+          {/* main two-column layout */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+            <div className="md:col-span-6">
+              <LeftColumn plan={leftPlan} />
+            </div>
+
+            <div className="md:col-span-6">
+              <div className="pl-6 md:pl-12">
+                <PriceCard plan={rightPlan} mode={mode} />
+              </div>
+            </div>
+          </div>
+
+          {/* second row (swapped) */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+            <div className="md:col-span-6 order-2 md:order-1">
+              <div className="pr-6 md:pr-12">
+                <PriceCard plan={leftPlan} mode={mode} />
+              </div>
+            </div>
+
+            <div className="md:col-span-6 order-1 md:order-2">
+              <div className="px-6 md:px-12 lg:px-16">
+                <div className="mb-4 inline-flex items-center gap-3 rounded-full bg-neutral-100/60 px-3 py-1 text-sm text-neutral-800">
+                  <span className="h-2 w-2 rounded-full bg-black inline-block" /> Our approach
+                </div>
+
+                <h3 className="text-5xl font-semibold tracking-tight">Implementation & support</h3>
+                <p className="mt-4 max-w-xl text-neutral-600">
+                  We help you onboard sites, define policies, and map verified events into payroll and HR systems — whether you run a few locations or thousands.
+                </p>
+
+                <ul className="mt-8 space-y-3 text-neutral-600">
+                  <li className="flex items-start gap-3"><span className="mt-1 inline-block h-2 w-2 rounded-full bg-neutral-400" /> Dedicated onboarding plan</li>
+                  <li className="flex items-start gap-3"><span className="mt-1 inline-block h-2 w-2 rounded-full bg-neutral-400" /> Policy templates for common industries</li>
+                  <li className="flex items-start gap-3"><span className="mt-1 inline-block h-2 w-2 rounded-full bg-neutral-400" /> Pre-built HRMS/Payroll mappings</li>
+                  <li className="flex items-start gap-3"><span className="mt-1 inline-block h-2 w-2 rounded-full bg-neutral-400" /> On-demand training for admins & managers</li>
+                  <li className="flex items-start gap-3"><span className="mt-1 inline-block h-2 w-2 rounded-full bg-neutral-400" /> Optional on-site review for complex deployments</li>
+                </ul>
+
+                <div className="mt-12">
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    className="rounded-full px-6 py-4 flex items-center gap-6 w-full md:w-3/4 text-lg font-semibold text-white bg-black hover:bg-neutral-900 transition shadow-[0_20px_60px_rgba(2,6,23,0.55)]"
+                  >
+                    <div className="text-sm text-neutral-300 mr-2">Discuss</div>
+                    <div className="text-4xl font-extrabold tracking-tight">Contact Sales</div>
+
+                    <div className="ml-auto h-12 w-12 rounded-full bg-white grid place-items-center text-black">
+                      <IconArrow />
+                    </div>
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="py-24" />
+        </div>
       </div>
     </main>
   );

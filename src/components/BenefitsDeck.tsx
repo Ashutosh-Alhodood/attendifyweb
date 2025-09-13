@@ -72,7 +72,8 @@ export default function BenefitsDeck() {
       ref={sceneRef}
       aria-label="Benefits"
       className="relative overflow-hidden"
-      style={{ height: "110vh" }}
+      /* Increased overall section height so the sticky stage has more scroll room */
+      style={{ height: "130vh" }}
     >
       {/* Backplate */}
       <div className="absolute inset-0 bg-neutral-50" />
@@ -110,7 +111,8 @@ export default function BenefitsDeck() {
           </header>
 
           {/* Deck area — one trio only */}
-          <div className="relative h-[700px] grid place-items-center">
+          {/* Increased deck container height to give the cards more vertical travel */}
+          <div className="relative h-[900px] grid place-items-center">
             {/* Center glow */}
             <div className="pointer-events-none absolute inset-0 grid place-items-center">
               <div className="h-[260px] w-[260px] rounded-full bg-indigo-500/12 blur-2xl" />
